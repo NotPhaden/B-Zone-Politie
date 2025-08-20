@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>B-ZONE COD PENAL & GENERARE DOSAR PENAL </title>
+  <style>
+    :root{
+      --bg:#0f172a;        /* slate-900 */
+      --panel:#111827;     /* gray-900 */
+      --muted:#1f2937;     /* gray-800 */
+      --text:#e5e7eb;      /* gray-200 */
+      --accent:#4f46e5;    /* indigo-600 */
+      --accent-2:#22c55e;  /* green-500 */
+      --danger:#ef4444;    /* red-500 */
+      --warn:#f59e0b;      /* amber-500 */
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 18px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; background:linear-gradient(180deg,#0b1022,#0f172a 20%, #0b1022 120%);
+      color:var(--text); font: 16px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+    header{
+      position:sticky; top:0; z-index:10;
+      backdrop-filter: blur(8px);
+      background:rgba(15,23,42,.75);
+      border-bottom:1px solid rgba(148,163,184,.18);
+    }
+    .wrap{max-width:1180px; margin:0 auto; padding:18px 20px}
+    h1{font-size: clamp(22px, 2.8vw, 34px); margin:0 0 6px; letter-spacing:.3px}
+    .tag{display:inline-flex; gap:8px; align-items:center; font-size:12px; background:rgba(99,102,241,.12); color:#c7d2fe; padding:6px 10px; border-radius:999px}
+
+    .layout{display:grid; grid-template-columns: 1.2fr .95fr; gap:22px; padding:22px}
+    @media (max-width: 980px){ .layout{grid-template-columns:1fr} }
+
+    .card{background: linear-gradient(180deg, #0b1228, #0a132a 60%, #09132c 100%); border:1px solid rgba(148,163,184,.15); border-radius:var(--radius); box-shadow:var(--shadow)}
+    .card h2{margin:0 0 14px; font-size:20px}
+    .card .head{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:16px 18px; border-bottom:1px solid rgba(148,163,184,.12)}
+    .card .body{padding:16px 18px}
+
+    .controls{display:flex; flex-wrap:wrap; gap:10px}
+    .input, select{background:#0b1226; border:1px solid rgba(148,163,184,.25); color:var(--text); border-radius:12px; padding:10px 12px; outline:none; transition:.2s border-color, .2s box-shadow}
+    .input:focus, select:focus{border-color:#818cf8; box-shadow:0 0 0 3px rgba(79,70,229,.25)}
+    .btn{appearance:none; border:1px solid rgba(148,163,184,.25); background:linear-gradient(180deg,#1d2343,#11183a); color:var(--text); padding:10px 14px; border-radius:12px; cursor:pointer; transition:.2s transform, .2s background, .2s box-shadow}
+    .btn:hover{transform: translateY(-1px); box-shadow: 0 8px 16px rgba(0,0,0,.25)}
+    .btn.primary{border-color: transparent; background: linear-gradient(180deg, #5b6be6, #4f46e5); box-shadow: 0 10px 22px rgba(79,70,229,.35)}
+    .btn.success{border-color: transparent; background: linear-gradient(180deg, #26d07c, #22c55e); box-shadow: 0 10px 22px rgba(34,197,94,.35); color:#04110b}
+    .btn.warn{background: linear-gradient(180deg, #fbbf24, #f59e0b); color:#0e0a00; border-color:transparent}
+    .btn.ghost{background:transparent}
+
+    table{width:100%; border-collapse:collapse; font-size:14px}
+    thead th{position:sticky; top:0; background:#0c1430; z-index:1}
+    th, td{padding:10px 8px; border-bottom:1px solid rgba(148,163,184,.12); text-align:left}
+    tbody tr{transition:.15s background}
+    tbody tr:hover{background: rgba(99,102,241,.08)}
+    .pill{display:inline-block; padding:4px 8px; border-radius:999px; font-size:12px}
+    .pill.true{background:rgba(34,197,94,.16); color:#86efac; border:1px solid rgba(34,197,94,.35)}
+    .pill.false{background:rgba(239,68,68,.12); color:#fecaca; border:1px solid rgba(239,68,68,.35)}
+    .pill.na{background:rgba(148,163,184,.12); color:#e5e7eb; border:1px solid rgba(148,163,184,.25)}
+
+    .tableWrap{max-height: 520px; overflow:auto; border-radius:14px; border:1px solid rgba(148,163,184,.12)}
+
+    .resultsBar{display:flex; justify-content:space-between; gap:10px; align-items:center; margin:12px 0 6px; font-size:13px; color:#cbd5e1}
+
+    .dosar-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+    .dosar-grid .full{grid-column:1/-1}
+
+    .printable{background:white; color:#0b1226; padding:24px; border-radius:12px}
+    .printable h3{margin:0 0 8px}
+    .muted{color:#94a3b8}
+    .small{font-size:12px}
+    .kv{display:grid; grid-template-columns: 180px 1fr; gap:8px}
+    .divider{height:1px; background:#e5e7eb; margin:12px 0}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+    .empty{opacity:.7; font-style: italic}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>B-ZONE COD PENAL & GENERARE DOSAR PENAL </h1>
+      <div class="tag" title="Date locale, customizabile">Set de date local • căutare instant • imprimare dosar</div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="layout">
+      <!-- COL 1: Căutare & listă -->
+      <section class="card" aria-labelledby="catalogTitle">
+        <div class="head">
+          <h2 id="catalogTitle">Caută infracțiuni și amenzi</h2>
+          <div class="controls">
+            <input id="q" class="input" placeholder="Caută: ex. limita de viteză, mită, droguri…" aria-label="Caută în catalog" />
+            <select id="capitolFilter" aria-label="Filtru capitol">
+              <option value="">Toate capitolele</option>
+            </select>
+            <select id="arestFilter" aria-label="Filtru arest">
+              <option value="">Arest: oricare</option>
+              <option value="are">Are arest</option>
+              <option value="nu">Fără arest</option>
+            </select>
+            <button id="reset" class="btn ghost" title="Resetează filtrele">Resetează</button>
+          </div>
+        </div>
+        <div class="body">
+          <div class="resultsBar">
+            <div id="count">—</div>
+            <div class="small">Click pe un rând pentru a genera un dosar precompletat</div>
+          </div>
+
+          <div class="tableWrap" role="region" aria-label="Rezultate căutare" tabindex="0">
+            <table>
+              <thead>
+                <tr>
+                  <th>Capitol</th>
+                  <th>Articol</th>
+                  <th>Infracțiune / Condiții</th>
+                  <th>Arest (zile)</th>
+                  <th>Amendă</th>
+                  <th>Puncte</th>
+                  <th>Anulare permis</th>
+                  <th>Percheziție vehicul</th>
+                  <th>Percheziție persoană</th>
+                  <th>Altele</th>
+                </tr>
+              </thead>
+              <tbody id="tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- COL 2: Generator dosar -->
+      <section class="card" aria-labelledby="dosarTitle">
+        <div class="head">
+          <h2 id="dosarTitle">Generator „Dosar Penal”</h2>
+          <div class="controls">
+            <button id="printBtn" class="btn primary" title="Imprimă / salvează PDF">Imprimă</button>
+            <button id="exportBtn" class="btn" title="Exportă dosarul ca JSON">Export JSON</button>
+            <button id="clearBtn" class="btn warn" title="Curăță formularul">Curăță</button>
+          </div>
+        </div>
+        <div class="body">
+          <div class="dosar-grid">
+            <label class="full">Infracțiune selectată
+              <input id="infDenumire" class="input" placeholder="Selectează din tabel sau scrie manual" />
+            </label>
+            <label>Capitol
+              <input id="infCapitol" class="input" />
+            </label>
+            <label>Articol
+              <input id="infArticol" class="input" />
+            </label>
+            <label>Condiții
+              <input id="infConditii" class="input" />
+            </label>
+            <label>Amendă propusă
+              <input id="infAmenda" class="input" />
+            </label>
+            <label>Puncte penalizare
+              <input id="infPuncte" class="input" />
+            </label>
+            <label>Arest (zile)
+              <input id="infArest" class="input" />
+            </label>
+            <label>Altele
+              <input id="infAltele" class="input" />
+            </label>
+
+            <label class="full">Date persoană vizată
+              <input id="persoana" class="input" placeholder="Nume Prenume / ID" />
+            </label>
+            <label>Data și ora
+              <input id="dataOra" class="input" type="datetime-local" />
+            </label>
+            <label>Locația
+              <input id="locatia" class="input" placeholder="Stradă, oraș" />
+            </label>
+            <label>Ofițer constatator
+              <input id="ofiter" class="input" placeholder="Nume Ofițer" />
+            </label>
+            <label class="full">Descriere faptei
+              <textarea id="descriere" class="input" rows="4" placeholder="Descriere concisă a situației, probe, martori…"></textarea>
+            </label>
+          </div>
+
+          <details style="margin-top:12px">
+            <summary class="small muted">Atribute procedurale (doar pentru referință)</summary>
+            <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin-top:10px">
+              <div>Percheziție vehicul: <span id="flagVehicul" class="pill na">—</span></div>
+              <div>Percheziție persoană: <span id="flagPersoana" class="pill na">—</span></div>
+              <div>Anulare permis: <span id="flagPermis" class="pill na">—</span></div>
+            </div>
+          </details>
+
+          <div class="divider"></div>
+
+          <div id="printArea" class="printable">
+            <h3>Dosar penal</h3>
+            <div class="small muted">Document de lucru generat automat</div>
+            <div class="divider"></div>
+            <div class="kv">
+              <div><strong>Infracțiune</strong></div><div id="p_denumire" class="mono"></div>
+              <div><strong>Capitol / Articol</strong></div><div id="p_capart" class="mono"></div>
+              <div><strong>Condiții</strong></div><div id="p_cond" class="mono"></div>
+              <div><strong>Amendă</strong></div><div id="p_amenda" class="mono"></div>
+              <div><strong>Puncte</strong></div><div id="p_puncte" class="mono"></div>
+              <div><strong>Arest</strong></div><div id="p_arest" class="mono"></div>
+              <div><strong>Altele</strong></div><div id="p_altele" class="mono"></div>
+            </div>
+            <div class="divider"></div>
+            <div class="kv">
+              <div><strong>Persoană vizată</strong></div><div id="p_persoana" class="mono empty">—</div>
+              <div><strong>Data & ora</strong></div><div id="p_dataora" class="mono empty">—</div>
+              <div><strong>Locația</strong></div><div id="p_loc" class="mono empty">—</div>
+              <div><strong>Ofițer</strong></div><div id="p_ofiter" class="mono empty">—</div>
+              <div class="full"><strong>Descriere</strong></div>
+              <div class="full mono empty" id="p_descriere">—</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    // ————————————————
+    // 1) Set de date: transpus în JSON din tabelul furnizat
+    // ————————————————
+    const rawData = [
+      {capitol:"CAP 1", articol:"1.1", denumire:"Limitele de viteza", conditii:"sub dublu", arest:"", amenda:"$3,000", puncte:"3", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 1", articol:"1.1", denumire:"Limitele de viteza", conditii:"peste dublu", arest:"", amenda:"$7,000", puncte:"0", anulare_permis:true, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 1", articol:"1.2", denumire:"Conducere imprudentă", conditii:"", arest:"", amenda:"$5,000", puncte:"3", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 1", articol:"1.3", denumire:"Nerespectarea marcajelor rutiere", conditii:"", arest:"", amenda:"$4,000", puncte:"3", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 1", articol:"1.4", denumire:"Neacordare de Prioritate", conditii:"", arest:"", amenda:"$4,000", puncte:"3", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 1", articol:"1.5", denumire:"Nerespectarea semnelor de circulatie ale Polițistului", conditii:"", arest:"", amenda:"$4,000", puncte:"0", anulare_permis:true, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 1", articol:"1.6", denumire:"Nerespectarea semnalelor luminoase și sonore", conditii:"", arest:"", amenda:"$8,000", puncte:"0", anulare_permis:true, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 1", articol:"1.7", denumire:"Parcare ilegală", conditii:"", arest:"", amenda:"$2,500", puncte:"0", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:"RIDICARE VEHICUL"},
+      {capitol:"CAP 1", articol:"1.8", denumire:"Traversarea interzisă", conditii:"", arest:"", amenda:"$1,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 1", articol:"1.9", denumire:"Acoperirea feței la volan", conditii:"", arest:"", amenda:"$5,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:true, perchezitie_persoana:true, altele:""},
+      {capitol:"CAP 1", articol:"1.10", denumire:"Folosirea telefonului în timpul condusului", conditii:"", arest:"", amenda:"$1,500", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 1", articol:"1.11", denumire:"Claxonarea excesivă", conditii:"", arest:"", amenda:"$5,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 1", articol:"1.12", denumire:"Geamuri fumurii", conditii:"", arest:"", amenda:"$3,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 1", articol:"1.13", denumire:"Neoane", conditii:"", arest:"", amenda:"$5,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 1", articol:"1.14", denumire:"Claxon neomologat", conditii:"", arest:"", amenda:"$3,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 1", articol:"1.15", denumire:"Xenoane", conditii:"", arest:"", amenda:"$4,500", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 1", articol:"1.16", denumire:"Nerespectarea culorii semaforului", conditii:"", arest:"", amenda:"$8,000", puncte:"0", anulare_permis:true, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+
+      {capitol:"CAP 2", articol:"2.1", denumire:"Evadarea de un ofiţer cu un autovehicul", conditii:"", arest:"40-60", amenda:"$7,000", puncte:"-", anulare_permis:true, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 2", articol:"2.2", denumire:"Condusul fără permis", conditii:"", arest:"30-50", amenda:"$6,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 2", articol:"2.3", denumire:"Conducere sub influența drogurilor sau a alcoolului - 0.8%", conditii:"", arest:"30-50", amenda:"$6,000", puncte:"-", anulare_permis:true, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 2", articol:"2.3", denumire:"Conducere sub influența drogurilor sau a alcoolului - 0.1% - 0.7%", conditii:"", arest:"", amenda:"$5,000", puncte:"-", anulare_permis:true, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 2", articol:"2.4", denumire:"Curse ilegale", conditii:"", arest:"40-60", amenda:"$15,000", puncte:"-", anulare_permis:true, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 2", articol:"2.5", denumire:"Părăsirea locului accidentului sau a unei scene", conditii:"", arest:"20-40", amenda:"$5,500", puncte:"-", anulare_permis:true, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 2", articol:"2.6", denumire:"Conducerea unui autovehicul neînmatriculat", conditii:"", arest:"", amenda:"$10,000", puncte:"-", anulare_permis:true, perchezitie_vehicul:true, perchezitie_persoana:true, altele:""},
+      {capitol:"CAP 2", articol:"2.7", denumire:"Refuzul prelevării de probe biologice", conditii:"", arest:"50-60", amenda:"$15,000", puncte:"-", anulare_permis:true, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+
+      {capitol:"CAP 3", articol:"3.1", denumire:"Acoperirea feței", conditii:"", arest:"", amenda:"$3,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:true, perchezitie_persoana:true, altele:""},
+      {capitol:"CAP 3", articol:"3.2", denumire:"Urmărirea unei persoane fără acord", conditii:"", arest:"20-40", amenda:"$7,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 3", articol:"3.3", denumire:"Urmărirea unei autospeciale de poliție/medici fără acord", conditii:"", arest:"20-40", amenda:"$12,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 3", articol:"3.4", denumire:"Expunere indecentă", conditii:"", arest:"20-40", amenda:"$6,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 3", articol:"3.5", denumire:"Prostituţie", conditii:"", arest:"25-50", amenda:"$10,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 3", articol:"3.6", denumire:"Viol", conditii:"", arest:"50-100", amenda:"$25,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 3", articol:"3.7", denumire:"Încălcarea proprietății private", conditii:"", arest:"25-50", amenda:"$7,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 3", articol:"3.8", denumire:"Vandalism", conditii:"", arest:"30-50", amenda:"$15,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 3", articol:"3.9", denumire:"Şantaj", conditii:"", arest:"35-55", amenda:"$6,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 3", articol:"3.10", denumire:"Tâlhărie", conditii:"", arest:"50-70", amenda:"$15,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 3", articol:"3.11", denumire:"Furt auto", conditii:"", arest:"30-50", amenda:"$7,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 3", articol:"3.11.1", denumire:"Furt auto Politie/Spital", conditii:"", arest:"50-70", amenda:"$10,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 3", articol:"3.12", denumire:"Jaf", conditii:"", arest:"60-100", amenda:"$30,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 3", articol:"3.12.1", denumire:"Jaf Armat", conditii:"", arest:"80-120", amenda:"$35,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 3", articol:"3.12.2", denumire:"Jaf Imobile", conditii:"", arest:"60-100", amenda:"$35,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 3", articol:"3.12.3", denumire:"Jaf Bancar", conditii:"", arest:"90-120", amenda:"$45,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 3", articol:"3.13", denumire:"Deranjarea liniştii publice", conditii:"", arest:"10-20", amenda:"$5,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 3", articol:"3.14", denumire:"Eșecul de a părăsi un loc", conditii:"", arest:"15-30", amenda:"$5,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 3", articol:"3.15", denumire:"Instigarea unei revolte", conditii:"", arest:"25-50", amenda:"$20,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 3", articol:"3.16", denumire:"Calomnie", conditii:"", arest:"15-30", amenda:"$7,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 3", articol:"3.17", denumire:"Căutarea în gunoaiele din spațiul public", conditii:"", arest:"", amenda:"$2,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 3", articol:"3.18", denumire:"Înșelăciune", conditii:"", arest:"40-60", amenda:"$40,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+
+      {capitol:"CAP 4", articol:"4.1", denumire:"Obstrucția unui ofiţer", conditii:"", arest:"40-70", amenda:"$15,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 4", articol:"4.2", denumire:"Eșecul de a părăsi o instituție a statului", conditii:"", arest:"15-30", amenda:"$8,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 4", articol:"4.3", denumire:"Ultraj", conditii:"", arest:"50-80", amenda:"$20,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 4", articol:"4.4", denumire:"Evadarea din custodie", conditii:"", arest:"80-120", amenda:"$10,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 4", articol:"4.5", denumire:"Rezistență la Arest", conditii:"", arest:"60-80", amenda:"$7,500", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 4", articol:"4.6", denumire:"Eşecul identificarii", conditii:"", arest:"15-30", amenda:"$15,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 4", articol:"4.7", denumire:"Dare de mită", conditii:"", arest:"30-50", amenda:"$15,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 4", articol:"4.8", denumire:"Codul Muncii", conditii:"", arest:"15-30", amenda:"$15,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 4", articol:"4.9", denumire:"Descurajarea unui martor sau a unei victime", conditii:"", arest:"35-55", amenda:"$10,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 4", articol:"4.10", denumire:"Limbaj vulgar", conditii:"", arest:"", amenda:"$7,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 4", articol:"4.11", denumire:"Abuzulul liniei de urgență", conditii:"", arest:"30-50", amenda:"$10,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 4", articol:"4.12", denumire:"Braconajul", conditii:"", arest:"20-30", amenda:"$30,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:"Baracuda, Caracatiță, Pisică de mare, orice specie de rechin, orice specie de balenă, Țestoasă măslinie, Țestoasa albastră, Țestoasă verde, Pește balon."},
+      {capitol:"CAP 4", articol:"4.13", denumire:"Fals/Uz de fals", conditii:"", arest:"20-50", amenda:"$15,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 4", articol:"4.14", denumire:"Eşecul de plată al amenzilor", conditii:"", arest:"20-40", amenda:"-", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+
+      {capitol:"CAP 5", articol:"5.1", denumire:"Deţinerea sau producerea de substante ilegale", conditii:"", arest:"", amenda:"-", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 5", articol:"5.2", denumire:"Prelucrarea sau deținerea țigărilor de contrabandă - TIP I", conditii:"1-10", arest:"10-20", amenda:"$10,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 5", articol:"5.2", denumire:"Prelucrarea sau deținerea țigărilor de contrabandă - TIP II", conditii:"10-50", arest:"20-30", amenda:"$15,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 5", articol:"5.2", denumire:"Prelucrarea sau deținerea țigărilor de contrabandă - TIP III", conditii:"50-100", arest:"30-40", amenda:"$20,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 5", articol:"5.2", denumire:"Prelucrarea sau deținerea țigărilor de contrabandă - TIP IV", conditii:"100+", arest:"40-60", amenda:"$25,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 5", articol:"5.3", denumire:"Prelucrarea sau deținerea de droguri de risc - TIP I", conditii:"1-10", arest:"20-30", amenda:"$15,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 5", articol:"5.3", denumire:"Prelucrarea sau deținerea de droguri de risc - TIP II", conditii:"10-50", arest:"30-40", amenda:"$20,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 5", articol:"5.3", denumire:"Prelucrarea sau deținerea de droguri de risc - TIP III", conditii:"50-100", arest:"40-50", amenda:"$25,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 5", articol:"5.3", denumire:"Prelucrarea sau deținerea de droguri de risc - TIP IV", conditii:"100+", arest:"50-70", amenda:"$30,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 5", articol:"5.4", denumire:"Prelucrarea sau deținerea de droguri de mare risc - TIP I", conditii:"1-10", arest:"40-50", amenda:"$30,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 5", articol:"5.4", denumire:"Prelucrarea sau deținerea de droguri de mare risc - TIP II", conditii:"10-50", arest:"50-60", amenda:"$40,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 5", articol:"5.4", denumire:"Prelucrarea sau deținerea de droguri de mare risc - TIP III", conditii:"50-100", arest:"60-70", amenda:"$50,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 5", articol:"5.4", denumire:"Prelucrarea sau deținerea de droguri de mare risc - TIP IV", conditii:"100+", arest:"70-100", amenda:"$60,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 5", articol:"5.5", denumire:"Bani nemarcati (Blood Money) - TIP I", conditii:"10K - 100K", arest:"20-30", amenda:"$20,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 5", articol:"5.5", denumire:"Bani nemarcati (Blood Money) - TIP II", conditii:"100K - 1M", arest:"30-40", amenda:"$30,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 5", articol:"5.5", denumire:"Bani nemarcati (Blood Money) - TIP III", conditii:"1M - 10M", arest:"40-50", amenda:"$40,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 5", articol:"5.5", denumire:"Bani nemarcati (Blood Money) - TIP IV", conditii:"10M +", arest:"50-60", amenda:"$50,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 5", articol:"5.6", denumire:"Practicarea medicinei fără licenţă", conditii:"", arest:"60-100", amenda:"$20,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 5", articol:"5.7", denumire:"Obligaţia de identificare adecvată", conditii:"", arest:"", amenda:"$10,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+
+      {capitol:"CAP 6", articol:"6.1", denumire:"Ameninţări criminale", conditii:"", arest:"20-40", amenda:"$8,500", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 6", articol:"6.2", denumire:"Tentativă de omor", conditii:"", arest:"40-60", amenda:"$10,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 6", articol:"6.3", denumire:"Vătămare corporală", conditii:"", arest:"20-40", amenda:"$7,500", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 6", articol:"6.4", denumire:"Vătămare corporală gravă", conditii:"", arest:"40-60", amenda:"$11,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 6", articol:"6.5", denumire:"Asalt cu o armă mortală", conditii:"", arest:"50-70", amenda:"$13,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 6", articol:"6.6", denumire:"Omor din culpă", conditii:"", arest:"40-60", amenda:"$10,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 6", articol:"6.7", denumire:"Crimă (Omucidere)", conditii:"", arest:"60-80", amenda:"$14,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 6", articol:"6.8", denumire:"Răpire", conditii:"", arest:"60-100", amenda:"$11,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 6", articol:"6.9", denumire:"Tortură", conditii:"", arest:"70-100", amenda:"$20,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 6", articol:"6.10", denumire:"Fraudarea Creditorilor", conditii:"", arest:"10-50", amenda:"$15.000 - $150.000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+
+      {capitol:"CAP 7", articol:"7.1", denumire:"Posesia unei arme albe", conditii:"", arest:"25-50", amenda:"$6,500", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:"EXCEPTIE SWITCHBLADE Maceta, bata, pumnal, cutit, ranga, wrench"},
+      {capitol:"CAP 7", articol:"7.2", denumire:"Posesia unei arme de foc de calibru mic fără permis PORT-ARMĂ", conditii:"", arest:"30-50", amenda:"$10,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:"Pistol, Combat Pistol, Vintage Pistol, Pistol MK2"},
+      {capitol:"CAP 7", articol:"7.3", denumire:"Posesia unei arme de foc de calibru mare", conditii:"", arest:"35-55", amenda:"$11,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:"Navy Revolver, Heavy Revolver, Gadget, Double Action Revolver"},
+      {capitol:"CAP 7", articol:"7.4", denumire:"Posesia unei arme de foc automată", conditii:"", arest:"40-60", amenda:"$12,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:"Machine Pistol, Micro SMG, Compact Rifle, SMG MK2, Gusenberg Sweeper, Assault Rifle MK2, Assault SMG, MG, Combat MG"},
+      {capitol:"CAP 7", articol:"7.5", denumire:"Posesia de explozibil", conditii:"", arest:"90-120", amenda:"$20,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 7", articol:"7.6", denumire:"Îndreptarea unei arme de foc", conditii:"", arest:"20-40", amenda:"$0", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 7", articol:"7.7", denumire:"Descărcarea letală a unei arme de foc", conditii:"", arest:"30-50", amenda:"$0", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 7", articol:"7.8", denumire:"Traficul de armament sau de munitie", conditii:"", arest:"80-120", amenda:"$50,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+
+      {capitol:"CAP 8", articol:"8.1", denumire:"Terorism", conditii:"", arest:"PE VIATA", amenda:"$0", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 8", articol:"8.2", denumire:"Încălcarea regimului de securitate al statului", conditii:"", arest:"60-90", amenda:"$35,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 8", articol:"8.3", denumire:"Împiedicarea activităților guvernamentale", conditii:"", arest:"80-100", amenda:"$50,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 8", articol:"8.4", denumire:"Formarea unui grup paramilitar", conditii:"", arest:"60-90", amenda:"$35,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 8", articol:"8.5", denumire:"Acte de incitare la violență împotriva instituțiilor guvernamentale", conditii:"", arest:"70-90", amenda:"$25,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 8", articol:"8.6", denumire:"Falsificarea documentelor guvernamentale", conditii:"", arest:"40-60", amenda:"$20,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 8", articol:"8.7", denumire:"Spionaj", conditii:"", arest:"40-60", amenda:"$20,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 8", articol:"8.8", denumire:"Sabotaj", conditii:"", arest:"60-80", amenda:"$35,000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 8", articol:"8.9", denumire:"Constituirea unui grup infracţional organizat", conditii:"", arest:"150 - PE VIATA", amenda:"$250.000 - $500.000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""},
+      {capitol:"CAP 8", articol:"8.10", denumire:"Corupție", conditii:"", arest:"120 - PE VIATA", amenda:"$150.000 - $300.000", puncte:"-", anulare_permis:false, perchezitie_vehicul:false, perchezitie_persoana:false, altele:""}
+    ];
+
+    // ————————————————
+    // 2) Utilitare
+    // ————————————————
+    const $ = (sel, root=document) => root.querySelector(sel);
+    const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+    const fmtBool = (v) => v===true?"<span class='pill true'>DA</span>": v===false?"<span class='pill false'>NU</span>":"<span class='pill na'>—</span>";
+
+    const unique = (arr) => Array.from(new Set(arr));
+
+    function normalize(str){
+      return (str||"")
+        .toString()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/\p{Diacritic}/gu,'');
+    }
+
+    function matchRec(rec, q){
+      if(!q) return true;
+      const n = normalize(q);
+      return [rec.capitol, rec.articol, rec.denumire, rec.conditii, rec.amenda, rec.altele]
+        .some(v => normalize(v).includes(n));
+    }
+
+    function byFilters(rec){
+      const cap = $('#capitolFilter').value;
+      const arestFilter = $('#arestFilter').value; // '', 'are', 'nu'
+      let ok = true;
+      if(cap && rec.capitol !== cap) ok = false;
+      if(arestFilter === 'are' && !rec.arest) ok = false;
+      if(arestFilter === 'nu' && rec.arest) ok = false;
+      return ok;
+    }
+
+    function renderTable(){
+      const q = $('#q').value.trim();
+      const tbody = $('#tbody');
+      tbody.innerHTML = '';
+      const rows = rawData.filter(r => matchRec(r,q) && byFilters(r));
+      $('#count').textContent = `${rows.length} rezultate`;
+
+      const frag = document.createDocumentFragment();
+      rows.forEach((r, idx)=>{
+        const tr = document.createElement('tr');
+        tr.tabIndex = 0; tr.role = 'button'; tr.title = 'Click pentru a precompleta dosarul';
+        tr.addEventListener('click', ()=> fillDosarFrom(r));
+        tr.addEventListener('keypress', (e)=>{ if(e.key==='Enter'){ fillDosarFrom(r);} });
+        tr.innerHTML = `
+          <td>${r.capitol}</td>
+          <td>${r.articol}</td>
+          <td><strong>${r.denumire}</strong>${r.conditii?`<div class='small muted'>${r.conditii}</div>`:''}</td>
+          <td>${r.arest||'—'}</td>
+          <td class="mono">${r.amenda||'—'}</td>
+          <td>${r.puncte||'—'}</td>
+          <td>${fmtBool(r.anulare_permis)}</td>
+          <td>${fmtBool(r.perchezitie_vehicul)}</td>
+          <td>${fmtBool(r.perchezitie_persoana)}</td>
+          <td>${r.altele||''}</td>
+        `;
+        frag.appendChild(tr);
+      });
+      tbody.appendChild(frag);
+    }
+
+    // ————————————————
+    // 3) Precompletare dosar + print & export
+    // ————————————————
+    function fillDosarFrom(r){
+      $('#infDenumire').value = r.denumire;
+      $('#infCapitol').value = r.capitol;
+      $('#infArticol').value = r.articol;
+      $('#infConditii').value = r.conditii||'';
+      $('#infAmenda').value = r.amenda||'';
+      $('#infPuncte').value = r.puncte||'';
+      $('#infArest').value = r.arest||'';
+      $('#infAltele').value = r.altele||'';
+
+      // pill flags
+      const veh = r.perchezitie_vehicul, per = r.perchezitie_persoana, perm = r.anulare_permis;
+      const setFlag = (el, val)=>{
+        el.className = 'pill ' + (val===true?'true':val===false?'false':'na');
+        el.textContent = val===true?'PERMIS':'NU';
+      };
+      setFlag($('#flagVehicul'), veh);
+      setFlag($('#flagPersoana'), per);
+      setFlag($('#flagPermis'), perm);
+
+      updatePrintable();
+      window.scrollTo({top:0, behavior:'smooth'});
+    }
+
+    function updatePrintable(){
+      const get = id=> $(id).value?.trim() || '';
+      const v = {
+        den: get('#infDenumire'), cap:get('#infCapitol'), art:get('#infArticol'), cond:get('#infConditii'),
+        amen:get('#infAmenda'), pct:get('#infPuncte'), are:get('#infArest'), alt:get('#infAltele'),
+        per:get('#persoana'), dt:get('#dataOra'), loc:get('#locatia'), of:get('#ofiter'), descr:get('#descriere')
+      };
+      $('#p_denumire').textContent = v.den || '—';
+      $('#p_capart').textContent = (v.cap||'—') + ' / ' + (v.art||'—');
+      $('#p_cond').textContent = v.cond || '—';
+      $('#p_amenda').textContent = v.amen || '—';
+      $('#p_puncte').textContent = v.pct || '—';
+      $('#p_arest').textContent = v.are || '—';
+      $('#p_altele').textContent = v.alt || '—';
+
+      $('#p_persoana').textContent = v.per || '—';
+      $('#p_dataora').textContent = v.dt || '—';
+      $('#p_loc').textContent = v.loc || '—';
+      $('#p_ofiter').textContent = v.of || '—';
+      $('#p_descriere').textContent = v.descr || '—';
+
+      // empty style
+      ['#p_persoana','#p_dataora','#p_loc','#p_ofiter','#p_descriere'].forEach(sel=>{
+        const el=$(sel); el.classList.toggle('empty', el.textContent==='—');
+      });
+    }
+
+    function exportJSON(){
+      const payload = {
+        infractiune: $('#infDenumire').value,
+        capitol: $('#infCapitol').value,
+        articol: $('#infArticol').value,
+        conditii: $('#infConditii').value,
+        amenda: $('#infAmenda').value,
+        puncte: $('#infPuncte').value,
+        arest: $('#infArest').value,
+        altele: $('#infAltele').value,
+        persoana: $('#persoana').value,
+        dataOra: $('#dataOra').value,
+        locatia: $('#locatia').value,
+        ofiter: $('#ofiter').value,
+        descriere: $('#descriere').value,
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `dosar_${(payload.persoana||'anonim').replace(/\s+/g,'_')}.json`;
+      a.click(); setTimeout(()=>URL.revokeObjectURL(url), 1000);
+    }
+
+    // ————————————————
+    // 4) Inițializare UI & evenimente
+    // ————————————————
+    function initFilters(){
+      const sel = $('#capitolFilter');
+      unique(rawData.map(r=>r.capitol)).forEach(cap=>{
+        const opt = document.createElement('option'); opt.value = cap; opt.textContent = cap; sel.appendChild(opt);
+      });
+    }
+
+    function bind(){
+      // live search (cu debounce ușor)
+      let t; $('#q').addEventListener('input', ()=>{ clearTimeout(t); t=setTimeout(renderTable, 80); });
+      $('#capitolFilter').addEventListener('change', renderTable);
+      $('#arestFilter').addEventListener('change', renderTable);
+      $('#reset').addEventListener('click', ()=>{ $('#q').value=''; $('#capitolFilter').value=''; $('#arestFilter').value=''; renderTable(); });
+
+      ['#infDenumire','#infCapitol','#infArticol','#infConditii','#infAmenda','#infPuncte','#infArest','#infAltele','#persoana','#dataOra','#locatia','#ofiter','#descriere']
+        .forEach(sel=> $(sel).addEventListener('input', updatePrintable));
+
+      $('#exportBtn').addEventListener('click', exportJSON);
+      $('#clearBtn').addEventListener('click', ()=>{
+        $$('#dosarTitle ~ .body input, #dosarTitle ~ .body textarea').forEach(i=> i.value='');
+        updatePrintable();
+      });
+      $('#printBtn').addEventListener('click', ()=>{
+        // Imprimă doar secțiunea de dosar
+        const restore = document.body.innerHTML;
+        const section = document.getElementById('printArea').outerHTML;
+        document.body.innerHTML = section; window.print();
+        document.body.innerHTML = restore; location.reload();
+      });
+    }
+
+    // init
+    initFilters();
+    bind();
+    renderTable();
+
+    // Pre-populare exemplu: căutare „limita de viteza”
+    document.getElementById('q').value = 'limita de viteza';
+    renderTable();
+  </script>
+</body>
+</html>
